@@ -1,0 +1,39 @@
+CREATE DATABASE IF NOT EXISTS minor_allotment;
+USE minor_allotment;
+
+CREATE TABLE students (
+  erpid VARCHAR(20) PRIMARY KEY,
+  name VARCHAR(100),
+  branch VARCHAR(50),
+  obtainedmarks_1 FLOAT,
+  totalmarks_1 FLOAT,
+  obtainedmarks_2 FLOAT,
+  totalmarks_2 FLOAT,
+  avg_percent FLOAT,
+  pref_1 VARCHAR(50),
+  pref_2 VARCHAR(50),
+  pref_3 VARCHAR(50),
+  pref_4 VARCHAR(50),
+  pref_5 VARCHAR(50)
+);
+
+CREATE TABLE branches (
+  branch_name VARCHAR(50) PRIMARY KEY,
+  total_seats INT DEFAULT 72,
+  allotted_seats INT DEFAULT 0
+);
+
+CREATE TABLE allotments (
+  erpid VARCHAR(20),
+  allotted_branch VARCHAR(50),
+  rank INT,
+  FOREIGN KEY (erpid) REFERENCES students(erpid)
+);
+
+CREATE TABLE admins (
+  id INT NOT NULL AUTO_INCREMENT,
+  username VARCHAR(50) NOT NULL UNIQUE,
+  password VARCHAR(255) NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (id)
+);

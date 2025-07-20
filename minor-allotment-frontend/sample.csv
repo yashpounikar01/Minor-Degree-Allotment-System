@@ -1,0 +1,9 @@
+erpid,name,branch,obtainedmarks_1,totalmarks_1,obtainedmarks_2,totalmarks_2,pref_1,pref_2,pref_3,pref_4,pref_5
+E101,Aarav,CSE,540,600,550,600,Civil,EE,ECE,ETC,ME
+E103,Raj,MECH,580,600,580,600,ETC,ECE,EE,Civil,ME
+E104,Isha,EEE,470,600,460,600,ECE,ME,ETC,EE,Civil
+E105,Soham,CIVIL,550,600,560,600,Civil,ECE,ETC,ME,EE
+E107,Kunal,ECE,430,600,420,600,ME,EE,ECE,Civil,ETC
+E108,Diya,CSE,590,600,590,600,ECE,EE,Civil,ETC,ME
+E109,Mehul,EEE,490,600,500,600,Civil,ME,ECE,ETC,EE
+E110,Simran,MECH,580,600,580,600,ETC,ECE,EE,Civil,ME
