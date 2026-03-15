@@ -15,9 +15,9 @@ app.use(express.json());
 // Routes
 app.use('/upload', require('./routes/upload'));
 app.use('/allot', require('./routes/allotment'));
+app.use('/sessions', require('./routes/sessions'));
 const authRoutes = require('./routes/auth');
 app.use('/auth', authRoutes);
-// app.use('/export', require('./routes/export'));
 app.use('/export', require('./routes/export-template'));
 
 
