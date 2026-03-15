@@ -1,8 +1,29 @@
 CREATE DATABASE IF NOT EXISTS minor_allotment;
 USE minor_allotment;
 
+-- ADMINS TABLE
+CREATE TABLE admins (
+  id INT NOT NULL AUTO_INCREMENT,
+  username VARCHAR(50) NOT NULL UNIQUE,
+  password VARCHAR(255) NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (id)
+);
+
+-- SESSIONS TABLE
+CREATE TABLE sessions (
+  id INT NOT NULL AUTO_INCREMENT,
+  session_name VARCHAR(100) NOT NULL UNIQUE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  is_active TINYINT(1) DEFAULT 0,
+  PRIMARY KEY (id)
+);
+
+-- STUDENTS TABLE
 CREATE TABLE students (
-  erpid VARCHAR(20) PRIMARY KEY,
+  id INT NOT NULL AUTO_INCREMENT,
+  session_id INT NOT NULL,
+  erpid VARCHAR(20),
   name VARCHAR(100),
   branch VARCHAR(50),
   obtainedmarks_1 FLOAT,
@@ -14,26 +35,31 @@ CREATE TABLE students (
   pref_2 VARCHAR(50),
   pref_3 VARCHAR(50),
   pref_4 VARCHAR(50),
-  pref_5 VARCHAR(50)
+  pref_5 VARCHAR(50),
+  PRIMARY KEY (id),
+  INDEX (session_id),
+  INDEX (erpid)
 );
 
+-- BRANCHES TABLE
 CREATE TABLE branches (
-  branch_name VARCHAR(50) PRIMARY KEY,
+  id INT NOT NULL AUTO_INCREMENT,
+  session_id INT NOT NULL,
+  branch_name VARCHAR(50),
   total_seats INT DEFAULT 72,
-  allotted_seats INT DEFAULT 0
+  allotted_seats INT DEFAULT 0,
+  PRIMARY KEY (id),
+  INDEX (session_id),
+  INDEX (branch_name)
 );
 
+-- ALLOTMENTS TABLE
 CREATE TABLE allotments (
+  id INT NOT NULL AUTO_INCREMENT,
+  session_id INT NOT NULL,
   erpid VARCHAR(20),
   allotted_branch VARCHAR(50),
   rank INT,
-  FOREIGN KEY (erpid) REFERENCES students(erpid)
-);
-
-CREATE TABLE admins (
-  id INT NOT NULL AUTO_INCREMENT,
-  username VARCHAR(50) NOT NULL UNIQUE,
-  password VARCHAR(255) NOT NULL,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (id)
+  PRIMARY KEY (id),
+  INDEX (session_id)
 );

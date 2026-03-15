@@ -1,80 +1,70 @@
 import React, { useState } from 'react';
+import { downloadMeritListCSV, downloadRankListCSV, downloadAllotmentDOCX } from '../api';
 
-const ExportButton = () => {
-  const [loading, setLoading] = useState(false);
+const ExportButton = ({ activeSessionId }) => {
+  const [loadingDocx, setLoadingDocx] = useState(false);
+  const [status, setStatus] = useState(null);
 
-  const handleDownload = async () => {
-    setLoading(true);
+  const flash = (type, msg) => {
+    setStatus({ type, msg });
+    setTimeout(() => setStatus(null), 4000);
+  };
+
+  const handleDocx = async () => {
+    setLoadingDocx(true);
     try {
-      // Updated URL to match your backend route
-      const response = await fetch('http://localhost:5000/export/docx-template', {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (!response.ok) {
-        // Get error details from response
-        const errorText = await response.text();
-        console.error('Server response:', errorText);
-        throw new Error(`Server error: ${response.status} - ${errorText}`);
-      }
-
-      // Check if response is JSON (multiple files) or binary (single file)
-      const contentType = response.headers.get('content-type');
-      
-      if (contentType && contentType.includes('application/json')) {
-        // Multiple files generated - show list
-        const result = await response.json();
-        console.log('Generated files:', result);
-        alert(`✅ Generated ${result.files.length} files:\n${result.files.map(f => f.filename).join('\n')}`);
-      } else {
-        // Single file - download it
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        
-        // Get filename from Content-Disposition header or use default
-        const disposition = response.headers.get('Content-Disposition');
-        let filename = 'allotment_list.docx';
-        if (disposition && disposition.includes('filename=')) {
-          filename = disposition.split('filename=')[1].replace(/['"]/g, '');
-        }
-        
-        link.setAttribute('download', filename);
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
-        window.URL.revokeObjectURL(url);
-        
-        alert('✅ File downloaded successfully!');
-      }
+      await downloadAllotmentDOCX(activeSessionId);
+      flash('success', 'Allotment document downloaded.');
     } catch (err) {
-      console.error('Download error:', err);
-      alert(`❌ Download failed: ${err.message}`);
-    } finally {
-      setLoading(false);
-    }
+      flash('error', err.message);
+    } finally { setLoadingDocx(false); }
+  };
+
+  const handleMeritCSV = () => {
+    try { downloadMeritListCSV(activeSessionId); flash('success', 'Merit list download started.'); }
+    catch (err) { flash('error', err.message); }
+  };
+
+  const handleRankCSV = () => {
+    try { downloadRankListCSV(activeSessionId); flash('success', 'Rank list download started.'); }
+    catch (err) { flash('error', err.message); }
   };
 
   return (
-    <div style={{ marginTop: '2rem' }}>
-      <button 
-        onClick={handleDownload} 
-        disabled={loading}
-        style={{
-          padding: '10px 20px',
-          fontSize: '16px',
-          cursor: loading ? 'not-allowed' : 'pointer',
-          opacity: loading ? 0.6 : 1,
-          marginBottom : '3rem',
-          
-        }}
-      >
-        {loading ? '⏳ Generating...' : '📥 Download Allotment List (.docx)'}
-      </button>
+    <div className="card">
+      <div className="card-header-row">
+        <div className="card-icon-sq ci-amber">📥</div>
+        <div>
+          <div className="card-title-text">Export Lists</div>
+          <div className="card-desc-text">Download merit list, rank list, or the official allotment document</div>
+        </div>
+      </div>
+
+      <div className="download-grid">
+        <button className="dl-card navy-accent" onClick={handleMeritCSV} disabled={!activeSessionId}>
+          <div className="dl-card-icon">📊</div>
+          <div className="dl-card-label">Merit List</div>
+          <div className="dl-card-sub">CSV · By percentage</div>
+        </button>
+
+        <button className="dl-card teal-accent" onClick={handleRankCSV} disabled={!activeSessionId}>
+          <div className="dl-card-icon">🏆</div>
+          <div className="dl-card-label">Rank List</div>
+          <div className="dl-card-sub">CSV · By branch</div>
+        </button>
+
+        <button className="dl-card amber-accent" onClick={handleDocx} disabled={loadingDocx || !activeSessionId}>
+          <div className="dl-card-icon">{loadingDocx ? '⏳' : '📄'}</div>
+          <div className="dl-card-label">{loadingDocx ? 'Generating…' : 'Allotment Doc'}</div>
+          <div className="dl-card-sub">DOCX · Official format</div>
+        </button>
+      </div>
+
+      {status && (
+        <div className={`alert alert-${status.type === 'success' ? 'success' : 'error'}`} style={{ marginTop: 14 }}>
+          {status.msg}
+        </div>
+      )}
     </div>
   );
 };

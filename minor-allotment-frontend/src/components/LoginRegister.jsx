@@ -5,15 +5,20 @@ export default function LoginRegister({ onAuthSuccess }) {
   const [mode, setMode] = useState('login');
   const [form, setForm] = useState({ username: '', password: '', secretCode: '' });
   const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [registered, setRegistered] = useState(false);
 
   const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:5000';
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
+    setError(null);
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (e) => {
+    e?.preventDefault();
     setError(null);
+    setLoading(true);
     try {
       const url = mode === 'login' ? '/auth/login' : '/auth/register';
       const payload =
@@ -29,75 +34,116 @@ export default function LoginRegister({ onAuthSuccess }) {
         axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
         onAuthSuccess(token);
       } else {
-        alert(res.data.message);
-        setMode('login');
+        setRegistered(true);
+        setTimeout(() => {
+          setRegistered(false);
+          setMode('login');
+          setForm({ username: '', password: '', secretCode: '' });
+        }, 2200);
       }
     } catch (err) {
-      setError(err.response?.data?.message || 'Operation failed');
+      setError(err.response?.data?.message || 'Operation failed. Please try again.');
+    } finally {
+      setLoading(false);
     }
   };
 
+  const switchMode = () => {
+    setMode(mode === 'login' ? 'register' : 'login');
+    setError(null);
+    setRegistered(false);
+  };
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-100 to-slate-100 px-4">
-      <div className="w-full max-w-md bg-white rounded-3xl shadow-2xl p-8 border border-emerald-200">
-        <h2 className="text-3xl font-extrabold text-center text-emerald-600 mb-6 tracking-tight">
-          {mode === 'login' ? '🔐 Admin Login' : '📝 Admin Registration'}
+    <div className="auth-page">
+      <div className="auth-card animate-in">
+
+        {/* Institutional seal */}
+        <div className="auth-seal">🎓</div>
+        <div className="auth-inst">Academic Administration</div>
+
+        <h2 className="auth-title">
+          {mode === 'login' ? 'Admin Portal' : 'Register Account'}
         </h2>
+        <p className="auth-subtitle">
+          {mode === 'login'
+            ? 'Sign in to manage allotments'
+            : 'Create an administrator account'}
+        </p>
 
-        <div className="space-y-5">
-          <input
-            name="username"
-            type="text"
-            placeholder="Username"
-            value={form.username}
-            onChange={handleChange}
-            className="w-full px-4 py-2 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-400 bg-slate-50"
-          />
-          <input
-            name="password"
-            type="password"
-            placeholder="Password"
-            value={form.password}
-            onChange={handleChange}
-            className="w-full px-4 py-2 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-400 bg-slate-50"
-          />
-          {mode === 'register' && (
-            <input
-              name="secretCode"
-              type="text"
-              placeholder="Admin Secret Code"
-              value={form.secretCode}
-              onChange={handleChange}
-              className="w-full px-4 py-2 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-400 bg-slate-50"
-            />
-          )}
+        {/* Success message after register */}
+        {registered ? (
+          <div className="alert alert-success" style={{ justifyContent: 'center', textAlign: 'center', padding: '20px' }}>
+            ✓ Account created. Redirecting to sign in…
+          </div>
+        ) : (
+          <form className="auth-form" onSubmit={handleSubmit}>
+            <div>
+              <label className="field-label">Username</label>
+              <input
+                className="inp"
+                name="username"
+                type="text"
+                placeholder="Enter your username"
+                value={form.username}
+                onChange={handleChange}
+                autoComplete="username"
+              />
+            </div>
 
-          {error && (
-            <p className="text-red-600 text-sm font-medium text-center">{error}</p>
-          )}
+            <div>
+              <label className="field-label">Password</label>
+              <input
+                className="inp"
+                name="password"
+                type="password"
+                placeholder="Enter your password"
+                value={form.password}
+                onChange={handleChange}
+                autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
+              />
+            </div>
 
-          <button
-            onClick={handleSubmit}
-            className="w-full py-3 rounded-xl bg-emerald-500 text-white font-bold transition-all hover:bg-emerald-600 hover:shadow-lg"
-          >
-            {mode === 'login' ? 'Login' : 'Register'}
+            {mode === 'register' && (
+              <div>
+                <label className="field-label">Admin Authorization Code</label>
+                <input
+                  className="inp"
+                  name="secretCode"
+                  type="text"
+                  placeholder="Enter the admin secret code"
+                  value={form.secretCode}
+                  onChange={handleChange}
+                />
+              </div>
+            )}
+
+            {error && (
+              <div className="alert alert-error">{error}</div>
+            )}
+
+            <button
+              type="submit"
+              className="btn btn-primary btn-full"
+              disabled={loading}
+              style={{ marginTop: 4 }}
+            >
+              {loading
+                ? <><span className="spinner"></span>{mode === 'login' ? ' Signing in…' : ' Registering…'}</>
+                : mode === 'login' ? 'Sign In' : 'Create Account'
+              }
+            </button>
+          </form>
+        )}
+
+        {/* Switch between login / register */}
+        <div className="auth-switch">
+          <p>{mode === 'login' ? 'New administrator?' : 'Already have an account?'}</p>
+          <button className="btn btn-ghost btn-full" onClick={switchMode}>
+            {mode === 'login' ? 'Register Account' : '← Back to Sign In'}
           </button>
         </div>
 
-        <p className="text-center mt-6 text-slate-600 text-sm">
-          {mode === 'login'
-            ? "Don't have an account?"
-            : 'Already have an account?'}{' '}
-          <button
-            onClick={() => {
-              setMode(mode === 'login' ? 'register' : 'login');
-              setError(null);
-            }}
-            className="text-emerald-600 font-medium underline hover:text-emerald-800"
-          >
-            {mode === 'login' ? 'Register' : 'Login'}
-          </button>
-        </p>
       </div>
     </div>
   );
